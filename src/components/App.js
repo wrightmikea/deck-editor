@@ -5,6 +5,7 @@ import PunchCard from '../utils/PunchCard';
 function App() {
   const [deck, setDeck] = useState(new Deck());
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [inputText, setInputText] = useState('');
   const [statusMessage, setStatusMessage] = useState(null);
 
   const showStatus = (message, isError = false) => {
@@ -16,6 +17,7 @@ function App() {
     if (window.confirm('Create new deck? Current deck will be lost.')) {
       setDeck(new Deck());
       setCurrentCardIndex(0);
+      setInputText('');
       showStatus('New deck created');
     }
   };
@@ -29,6 +31,7 @@ function App() {
       const loadedDeck = Deck.fromBinary(arrayBuffer, file.name.replace(/\.deck$/, ''));
       setDeck(loadedDeck);
       setCurrentCardIndex(0);
+      setInputText(loadedDeck.getCard(0).toText().trimEnd());
       showStatus(`Loaded: ${file.name}`);
     } catch (error) {
       showStatus(`Error loading deck: ${error.message}`, true);
@@ -88,21 +91,11 @@ function App() {
   };
 
   const handleUpdateCard = (text) => {
-    console.log('[DEBUG] handleUpdateCard called');
-    console.log('[DEBUG] Input text:', JSON.stringify(text));
-    console.log('[DEBUG] Text length:', text.length);
-    console.log('[DEBUG] Text chars:', text.split('').map((c, i) => `[${i}]='${c}' (${c.charCodeAt(0)})`).join(', '));
+    setInputText(text);
 
     const newDeck = new Deck(deck.name);
     newDeck.cards = [...deck.cards];
     newDeck.updateCard(currentCardIndex, text);
-
-    console.log('[DEBUG] Card updated, columns:', newDeck.cards[currentCardIndex].columns.length);
-    console.log('[DEBUG] First 10 columns:', newDeck.cards[currentCardIndex].columns.slice(0, 10).map((col, i) => {
-      const char = col.toChar();
-      const isEmpty = col.punches.isEmpty();
-      return `[${i}]='${char}' empty=${isEmpty}`;
-    }).join(', '));
 
     setDeck(newDeck);
   };
@@ -115,11 +108,11 @@ function App() {
   const handleNavigate = (newIndex) => {
     if (newIndex >= 0 && newIndex < deck.cards.length) {
       setCurrentCardIndex(newIndex);
+      setInputText(deck.getCard(newIndex).toText().trimEnd());
     }
   };
 
   const currentCard = deck.getCard(currentCardIndex);
-  const cardText = currentCard.toText();
 
   return (
     <div className="app">
@@ -207,25 +200,13 @@ function App() {
               id="card-text"
               type="text"
               className="text-input"
-              value={cardText}
-              onChange={(e) => {
-                console.log('[DEBUG] Input onChange event fired');
-                console.log('[DEBUG] Raw input value:', JSON.stringify(e.target.value));
-                const processed = e.target.value.toUpperCase().slice(0, 80);
-                console.log('[DEBUG] Processed value:', JSON.stringify(processed));
-                handleUpdateCard(processed);
-              }}
-              onKeyDown={(e) => {
-                console.log('[DEBUG] KeyDown event:', e.key, 'code:', e.code, 'charCode:', e.charCode);
-              }}
-              onInput={(e) => {
-                console.log('[DEBUG] Input event:', JSON.stringify(e.target.value));
-              }}
+              value={inputText}
+              onChange={(e) => handleUpdateCard(e.target.value.toUpperCase().slice(0, 80))}
               maxLength={80}
               placeholder="Type to punch card..."
             />
             <div className="editor-controls">
-              <span className="char-count">{cardText.length} / 80</span>
+              <span className="char-count">{inputText.length} / 80</span>
               <button onClick={handleClearCard}>Clear Card</button>
             </div>
           </div>
