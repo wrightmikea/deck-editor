@@ -24,11 +24,16 @@ class PunchCard {
    * @returns {PunchCard}
    */
   static fromText(text) {
+    console.log('[DEBUG] PunchCard.fromText called with:', JSON.stringify(text));
     const card = new PunchCard('text');
     const chars = text.slice(0, 80);
+    console.log('[DEBUG] Processing', chars.length, 'characters');
 
     for (let i = 0; i < chars.length; i++) {
-      card.columns[i] = Column.fromChar(chars[i]);
+      const char = chars[i];
+      card.columns[i] = Column.fromChar(char);
+      const isEmpty = card.columns[i].punches.isEmpty();
+      console.log(`[DEBUG] Column ${i}: char='${char}' (code ${char.charCodeAt(0)}) isEmpty=${isEmpty}`);
     }
 
     return card;

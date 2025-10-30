@@ -88,9 +88,22 @@ function App() {
   };
 
   const handleUpdateCard = (text) => {
+    console.log('[DEBUG] handleUpdateCard called');
+    console.log('[DEBUG] Input text:', JSON.stringify(text));
+    console.log('[DEBUG] Text length:', text.length);
+    console.log('[DEBUG] Text chars:', text.split('').map((c, i) => `[${i}]='${c}' (${c.charCodeAt(0)})`).join(', '));
+
     const newDeck = new Deck(deck.name);
     newDeck.cards = [...deck.cards];
     newDeck.updateCard(currentCardIndex, text);
+
+    console.log('[DEBUG] Card updated, columns:', newDeck.cards[currentCardIndex].columns.length);
+    console.log('[DEBUG] First 10 columns:', newDeck.cards[currentCardIndex].columns.slice(0, 10).map((col, i) => {
+      const char = col.toChar();
+      const isEmpty = col.punches.isEmpty();
+      return `[${i}]='${char}' empty=${isEmpty}`;
+    }).join(', '));
+
     setDeck(newDeck);
   };
 
@@ -106,7 +119,7 @@ function App() {
   };
 
   const currentCard = deck.getCard(currentCardIndex);
-  const cardText = currentCard.toText().trimEnd();
+  const cardText = currentCard.toText();
 
   return (
     <div className="app">
@@ -195,7 +208,19 @@ function App() {
               type="text"
               className="text-input"
               value={cardText}
-              onChange={(e) => handleUpdateCard(e.target.value.toUpperCase().slice(0, 80))}
+              onChange={(e) => {
+                console.log('[DEBUG] Input onChange event fired');
+                console.log('[DEBUG] Raw input value:', JSON.stringify(e.target.value));
+                const processed = e.target.value.toUpperCase().slice(0, 80);
+                console.log('[DEBUG] Processed value:', JSON.stringify(processed));
+                handleUpdateCard(processed);
+              }}
+              onKeyDown={(e) => {
+                console.log('[DEBUG] KeyDown event:', e.key, 'code:', e.code, 'charCode:', e.charCode);
+              }}
+              onInput={(e) => {
+                console.log('[DEBUG] Input event:', JSON.stringify(e.target.value));
+              }}
               maxLength={80}
               placeholder="Type to punch card..."
             />
