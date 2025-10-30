@@ -316,6 +316,45 @@ deck-editor/
 └── README.md
 ```
 
+### Supported Character Set
+
+The IBM 1130 Deck Editor supports the IBM 029 Hollerith character set, which includes 48 printable characters. Characters not in this set will be ignored when typing.
+
+#### Alphabetic Characters (26)
+- **Uppercase Letters**: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+- **Note**: Lowercase letters are automatically converted to uppercase
+
+#### Numeric Characters (10)
+- **Digits**: 0 1 2 3 4 5 6 7 8 9
+
+#### Special Characters (12)
+- **Common**: (space) . , - / ( ) + * = $ &
+- **Note**: Space bar creates a blank column (no punches)
+
+#### Additional Special Characters (11)
+- **Extended**: < > % @ # ! : ; ? " ' _ |
+
+#### Unsupported Characters
+The following common keyboard characters are **NOT** supported by IBM 029 punch cards:
+- **Backslash**: \ (not part of IBM 029 character set)
+- **Brackets**: [ ] { }
+- **Caret**: ^
+- **Tilde**: ~
+- **Backtick**: `
+- **Tab**: (use spaces instead)
+- **Newline**: (single-line cards only)
+
+#### Character Input Behavior
+1. **Uppercase Conversion**: All lowercase letters automatically convert to uppercase
+2. **Ignored Characters**: Unsupported characters are silently ignored (not added to card)
+3. **Maximum Length**: Input automatically truncated at 80 characters
+4. **Space Handling**: Spaces create blank columns and count toward the 80-character limit
+
+#### Testing Coverage
+All supported characters have corresponding test cases in:
+- `src/tests/HollerithCode.test.js` - Individual character encoding tests
+- `src/tests/PunchCard.test.js` - Full card text encoding tests
+
 ---
 
 ## User Experience (UX) Requirements

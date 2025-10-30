@@ -131,6 +131,26 @@ describe('HollerithCode', () => {
       expect(array[2]).toBe(true);  // Row 0
       expect(array[3]).toBe(true);  // Row 1
     });
+
+    test('should roundtrip all special characters', () => {
+      // All special characters from IBM 029 character set
+      const specials = '&-/.,()+=*$<>%@#!:;?"\'_| ';
+      for (const char of specials) {
+        const encoded = HollerithCode.fromChar(char);
+        const decoded = encoded.toChar();
+        expect(decoded).toBe(char);
+      }
+    });
+
+    test('should ignore unsupported characters', () => {
+      // Backslash and other unsupported characters
+      const unsupported = ['\\', '[', ']', '{', '}', '^', '~', '`'];
+      for (const char of unsupported) {
+        const code = HollerithCode.fromChar(char);
+        // Should return empty/space for unsupported characters
+        expect(code.isEmpty()).toBe(true);
+      }
+    });
   });
 
   describe('Character Decoding', () => {
