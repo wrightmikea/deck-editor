@@ -68,7 +68,9 @@ function App() {
     newDeck.cards = [...deck.cards];
     newDeck.addCard();
     setDeck(newDeck);
-    setCurrentCardIndex(newDeck.cards.length - 1);
+    const newIndex = newDeck.cards.length - 1;
+    setCurrentCardIndex(newIndex);
+    setInputText(''); // Clear input for new card
     showStatus('Card added');
   };
 
@@ -202,6 +204,30 @@ function App() {
               className="text-input"
               value={inputText}
               onChange={(e) => handleUpdateCard(e.target.value.toUpperCase().slice(0, 80))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // Enter advances to next card, or adds new card if at end
+                  if (currentCardIndex === deck.cards.length - 1) {
+                    handleAddCard();
+                  } else {
+                    handleNavigate(currentCardIndex + 1);
+                  }
+                } else if (e.key === 'Tab') {
+                  e.preventDefault();
+                  if (e.shiftKey) {
+                    // Shift+Tab goes to previous card
+                    handleNavigate(currentCardIndex - 1);
+                  } else {
+                    // Tab goes to next card, or adds new card if at end
+                    if (currentCardIndex === deck.cards.length - 1) {
+                      handleAddCard();
+                    } else {
+                      handleNavigate(currentCardIndex + 1);
+                    }
+                  }
+                }
+              }}
               maxLength={80}
               placeholder="Type to punch card..."
             />
@@ -232,53 +258,34 @@ function App() {
   );
 }
 
-// Simple CardViewer component
+// Authentic IBM punch card viewer matching reference implementation
 function CardViewer({ card }) {
-  const CARD_WIDTH = 1000;
-  const CARD_HEIGHT = 300;
-  const COLUMN_WIDTH = CARD_WIDTH / 80;
-  const ROW_HEIGHT = CARD_HEIGHT / 14;
+  // SVG dimensions - proper IBM card aspect ratio (7⅜" × 3¼")
+  const CARD_WIDTH = 800;
+  const CARD_HEIGHT = CARD_WIDTH / 2.269; // IBM card aspect ratio
 
-  const renderPunchHole = (col, row) => {
-    const x = col * COLUMN_WIDTH + COLUMN_WIDTH / 2;
-    const y = (row + 1) * ROW_HEIGHT;
-    return (
-      <circle
-        key={`${col}-${row}`}
-        cx={x}
-        cy={y}
-        r={4}
-        fill="#000"
-      />
-    );
-  };
+  // Margins
+  const LEFT_MARGIN = CARD_WIDTH * 0.025;
+  const RIGHT_MARGIN = CARD_WIDTH * 0.025;
+  const TOP_MARGIN = CARD_HEIGHT * 0.045;
+  const BOTTOM_MARGIN = CARD_HEIGHT * 0.045;
 
-  const renderColumn = (column, colIndex) => {
-    const punches = column.punches.asArray();
-    const printedChar = column.printedChar || column.toChar();
+  // Punch area dimensions
+  const PUNCH_WIDTH_AREA = CARD_WIDTH - LEFT_MARGIN - RIGHT_MARGIN;
+  const PUNCH_HEIGHT_AREA = CARD_HEIGHT - TOP_MARGIN - BOTTOM_MARGIN;
 
-    return (
-      <g key={colIndex}>
-        {/* Print character at top */}
-        {printedChar && printedChar !== ' ' && (
-          <text
-            x={colIndex * COLUMN_WIDTH + COLUMN_WIDTH / 2}
-            y={12}
-            fontSize="10"
-            textAnchor="middle"
-            fill="#000"
-          >
-            {printedChar}
-          </text>
-        )}
+  const COL_WIDTH = PUNCH_WIDTH_AREA / 80;
+  const ROW_HEIGHT = PUNCH_HEIGHT_AREA / 12;
+  const TEXT_Y = TOP_MARGIN - 5;
+  const GRID_START_Y = TOP_MARGIN;
 
-        {/* Punch holes */}
-        {punches.map((isPunched, rowIndex) =>
-          isPunched ? renderPunchHole(colIndex, rowIndex) : null
-        )}
-      </g>
-    );
-  };
+  const PUNCH_WIDTH = COL_WIDTH * 0.6;
+  const PUNCH_HEIGHT = ROW_HEIGHT * 0.7; // Rectangular (taller than wide)
+  const GUIDE_WIDTH = COL_WIDTH * 0.5;
+  const GUIDE_HEIGHT = ROW_HEIGHT * 0.6;
+
+  // Row indices: [12, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  // Digit 0 is at row index 2, digit 1 at index 3, etc.
 
   return (
     <svg
@@ -286,7 +293,141 @@ function CardViewer({ card }) {
       viewBox={`0 0 ${CARD_WIDTH} ${CARD_HEIGHT}`}
       preserveAspectRatio="xMidYMid meet"
     >
-      {card.columns.map((column, i) => renderColumn(column, i))}
+      {/* Card background with corner cut */}
+      <polygon
+        points={`${LEFT_MARGIN},0 ${CARD_WIDTH},0 ${CARD_WIDTH},${CARD_HEIGHT} 0,${CARD_HEIGHT} 0,${TOP_MARGIN}`}
+        fill="#f4e8d0"
+        stroke="#999"
+        strokeWidth="2"
+      />
+
+      {/* Column numbers (top row, between rows 0 and 1) */}
+      {Array.from({ length: 80 }, (_, col) => {
+        const x = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2;
+        const y = GRID_START_Y + 3 * ROW_HEIGHT;
+        return (
+          <text
+            key={`top-${col}`}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            fontSize="6"
+            fill="#555"
+            fontFamily="monospace"
+            fontWeight="bold"
+          >
+            {col + 1}
+          </text>
+        );
+      })}
+
+      {/* Column numbers (bottom row, after row 9) */}
+      {Array.from({ length: 80 }, (_, col) => {
+        const x = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2;
+        const y = GRID_START_Y + 12 * ROW_HEIGHT;
+        return (
+          <text
+            key={`bottom-${col}`}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            fontSize="6"
+            fill="#555"
+            fontFamily="monospace"
+            fontWeight="bold"
+          >
+            {col + 1}
+          </text>
+        );
+      })}
+
+      {/* Printed characters */}
+      {card.columns.map((column, colIndex) => {
+        const char = column.printedChar || column.toChar();
+        if (char && char !== ' ') {
+          const x = LEFT_MARGIN + colIndex * COL_WIDTH + COL_WIDTH / 2;
+          return (
+            <text
+              key={`char-${colIndex}`}
+              x={x}
+              y={TEXT_Y}
+              textAnchor="middle"
+              fontSize="12"
+              fontFamily="'Courier New', monospace"
+              fill="#000"
+            >
+              {char}
+            </text>
+          );
+        }
+        return null;
+      })}
+
+      {/* Guide holes (faint outlines showing all punch positions) */}
+      {Array.from({ length: 80 }, (_, col) =>
+        Array.from({ length: 12 }, (_, row) => {
+          const x = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2;
+          const y = GRID_START_Y + row * ROW_HEIGHT + ROW_HEIGHT / 2;
+          return (
+            <ellipse
+              key={`guide-${col}-${row}`}
+              cx={x}
+              cy={y}
+              rx={GUIDE_WIDTH / 2}
+              ry={GUIDE_HEIGHT / 2}
+              fill="none"
+              stroke="#ccc"
+              strokeWidth="0.5"
+            />
+          );
+        })
+      )}
+
+      {/* Pre-printed digits 0-9 in each column */}
+      {Array.from({ length: 80 }, (_, col) =>
+        Array.from({ length: 10 }, (_, digit) => {
+          const x = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2;
+          const rowIndex = digit + 2; // Digit 0 at index 2, digit 1 at 3, etc.
+          const y = GRID_START_Y + rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2 + 3;
+          return (
+            <text
+              key={`digit-${col}-${digit}`}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              fontSize="10"
+              fill="#bbb"
+              fontFamily="'Courier New', monospace"
+              fontWeight="bold"
+            >
+              {digit}
+            </text>
+          );
+        })
+      )}
+
+      {/* Actual punches (rectangular, solid black) */}
+      {card.columns.map((column, colIndex) => {
+        const punches = column.punches.asArray();
+        return punches.map((isPunched, rowIndex) => {
+          if (isPunched) {
+            const x = LEFT_MARGIN + colIndex * COL_WIDTH + COL_WIDTH / 2;
+            const y = GRID_START_Y + rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2;
+            return (
+              <rect
+                key={`punch-${colIndex}-${rowIndex}`}
+                x={x - PUNCH_WIDTH / 2}
+                y={y - PUNCH_HEIGHT / 2}
+                width={PUNCH_WIDTH}
+                height={PUNCH_HEIGHT}
+                fill="#000"
+                rx="1"
+              />
+            );
+          }
+          return null;
+        });
+      })}
     </svg>
   );
 }
