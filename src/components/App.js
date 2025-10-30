@@ -23,17 +23,29 @@ function App() {
   };
 
   const handleLoadDeck = async (event) => {
+    console.log('handleLoadDeck triggered', event);
     const file = event.target.files[0];
-    if (!file) return;
+    console.log('Selected file:', file);
+
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
 
     try {
+      console.log('Reading file:', file.name, 'size:', file.size);
       const arrayBuffer = await file.arrayBuffer();
+      console.log('ArrayBuffer size:', arrayBuffer.byteLength);
+
       const loadedDeck = Deck.fromBinary(arrayBuffer, file.name.replace(/\.deck$/, ''));
+      console.log('Deck loaded:', loadedDeck.cards.length, 'cards');
+
       setDeck(loadedDeck);
       setCurrentCardIndex(0);
       setInputText(loadedDeck.getCard(0).toText().trimEnd());
       showStatus(`Loaded: ${file.name}`);
     } catch (error) {
+      console.error('Error loading deck:', error);
       showStatus(`Error loading deck: ${error.message}`, true);
     }
 
@@ -131,9 +143,15 @@ function App() {
           </div>
           <div className="deck-controls">
             <button onClick={handleNewDeck}>New Deck</button>
-            <label className="file-button">
+            <label htmlFor="deck-file-input" className="file-button">
               Load
-              <input type="file" accept=".deck,.bin" onChange={handleLoadDeck} />
+              <input
+                id="deck-file-input"
+                type="file"
+                accept=".deck,.bin"
+                onChange={handleLoadDeck}
+                onClick={(e) => console.log('File input clicked')}
+              />
             </label>
             <button onClick={handleSaveDeck}>Save</button>
             <button onClick={handleAddCard}>Add Card</button>
