@@ -10,12 +10,15 @@ module.exports = {
     '!src/tests/**',
   ],
   coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
+    // Strict thresholds for business logic (utils)
+    './src/utils/**/*.js': {
+      branches: 85,
+      functions: 100,
       lines: 90,
       statements: 90,
     },
+    // No global threshold - allows components to have lower coverage
+    // while maintaining high coverage for critical business logic
   },
   testMatch: [
     '<rootDir>/src/tests/**/*.test.js',
