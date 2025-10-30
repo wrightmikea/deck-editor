@@ -195,6 +195,16 @@ npm start
 4. See Hollerith punch patterns update in real-time
 5. Click "Clear Card" to reset current card
 
+### Keyboard Shortcuts
+
+The deck editor supports keyboard shortcuts for efficient card navigation, similar to an authentic keypunch machine:
+
+- **Enter** - Advance to next card (or add new card if at end of deck)
+- **Tab** - Advance to next card (or add new card if at end of deck)
+- **Shift+Tab** - Navigate to previous card
+
+These shortcuts work when the text input field is focused, enabling rapid card entry without reaching for the mouse.
+
 ### Saving a Deck
 
 1. Click "Save" button
