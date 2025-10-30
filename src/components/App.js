@@ -264,6 +264,9 @@ function App() {
             View on GitHub
           </a>
         </p>
+        <p>
+          Copyright &copy; 2025 Michael A. Wright. All rights reserved.
+        </p>
       </footer>
 
       {/* Status Message */}

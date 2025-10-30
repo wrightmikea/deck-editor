@@ -427,13 +427,19 @@ This is an educational project focused on preserving computing history and demon
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details
+MIT License
+
+Copyright (c) 2025 Michael A. Wright
+
+See [LICENSE](LICENSE) file for full license text.
 
 ---
 
 ## Author
 
 **Michael A Wright**
+
+Copyright (c) 2025 Michael A. Wright. All rights reserved.
 
 Inspired by the IBM 029 keypunch machines from the 1960s-70s and built to preserve and teach computer history.
 
