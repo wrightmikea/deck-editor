@@ -106,7 +106,7 @@ function App() {
   };
 
   const currentCard = deck.getCard(currentCardIndex);
-  const cardText = currentCard.toText();
+  const cardText = currentCard.toText().trimEnd();
 
   return (
     <div className="app">
@@ -200,7 +200,7 @@ function App() {
               placeholder="Type to punch card..."
             />
             <div className="editor-controls">
-              <span className="char-count">{cardText.trim().length} / 80</span>
+              <span className="char-count">{cardText.length} / 80</span>
               <button onClick={handleClearCard}>Clear Card</button>
             </div>
           </div>
