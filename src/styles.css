@@ -97,6 +97,19 @@ button:active:not(:disabled) {
 
 .file-button {
   display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid #bdc3c7;
+  background-color: #3498db;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.file-button:hover {
+  background-color: #2980b9;
 }
 
 /* Card Navigator */

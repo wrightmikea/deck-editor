@@ -132,7 +132,7 @@ function App() {
           <div className="deck-controls">
             <button onClick={handleNewDeck}>New Deck</button>
             <label className="file-button">
-              <button as="span">Load</button>
+              Load
               <input type="file" accept=".deck,.bin" onChange={handleLoadDeck} />
             </label>
             <button onClick={handleSaveDeck}>Save</button>
